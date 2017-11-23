@@ -1,0 +1,194 @@
+---
+title: "102AHW3"
+author: "JING LI"
+date: "10/19/2016"
+output: html_document
+---
+
+_Modify this file with your answers and responses. Please preserve all text that is italicized._
+
+_You are encouraged to collaborate with your classmates, however, you are responsible for your own work. Please do not ask people outside of this class for help with this assignment._
+
+### Reading:
+
+a. Introduction to dplyr vignette: https://cran.rstudio.com/web/packages/dplyr/vignettes/introduction.html
+b. How dplyr replaced my most common R idioms: http://www.onthelambda.com/2014/02/10/how-dplyr-replaced-my-most-common-r-idioms/
+c. regular expressions tutorial http://regexone.com/
+d. Advanced R chapter 7: OO Field guide
+
+1. __dplyr exercises__
+
+_Install the package `fueleconomy` and load the dataset `vehicles`. Answer the following questions._
+
+```{r, error = TRUE}
+# install.packages("fueleconomy")
+library(fueleconomy)
+data(vehicles)
+```
+
+a. How many different (unique) vehicle manufacturers (variable `make`) are included in the dataset? 
+
+```{r}
+library(dplyr)
+# write your code here, the output displayed should answer the question.
+vehicles %>% select(make) %>% unique %>% nrow
+```
+
+b. How many vehicles produced in 2014 are represented in the dataset?
+
+```{r}
+# write your code here, the output displayed should answer the question.
+vehicles %>% filter(year==2014) %>% nrow
+```
+
+c. For the year 2014, what was the average city gas mileage for all compact cars? What was the average city gas mileage for midsize cars in 2014?
+
+```{r}
+# write your code here, the output displayed should answer the question.
+vehicles %>% filter(year==2014, class=="Compact Cars") %>% summarise(mean_cty=mean(cty))
+vehicles %>% filter(year==2014, class=="Midsize Cars") %>% summarise(mean_cty=mean(cty))
+```
+
+d. For the year 2014, compare manufacturers of midsize cars. Find the average city gas mileage of midsize cars for each manufacturer. For example, in 2014, Acura has 5 midsize cars with an average city mpg of 20.6, while Audi has 12 midsize cars with an average city mpg of 19.08. Produce a table showing the city gas mileage for 2014 midsize cars for the 27 manufacturers represented in the table. Arrange the results in descending order, so that the manufacturer with the highest average mpg will be listed first.
+
+```{r}
+# write your code here, the output displayed should answer the question.
+vehicles %>% filter(year==2014, class=="Midsize Cars") %>% group_by(make) %>% summarise(mean_cty = mean(cty)) %>% arrange(desc(mean_cty))
+```
+
+2. __Scrape baseball-reference.com__
+
+_Use package rvest to scrape data from the baseball-reference.com site._
+
+_Start at this page <http://www.baseball-reference.com/teams/>. For each of the 30 Active Franchises, visit each team's page and download the "Franchise History" table. The node you want is "#franchise_years". Combine all of the tables together into one. It is also important to note that some franchises have changed team names and locations. Please add a column to the dataframe called "current" which contains the current name of the team. (e.g. There should be a column that identifies the 1965 Milwaukee Braves as the Atlanta Braves)_
+
+__Hint:__ _After I ran this code, my resulting table has 2594 rows and 23 columns._
+
+__Hint:__ _I used the function `html_table()` to extract the table from each team's page._
+
+__Important:__ _It is bad manners to repeatedly hit a site with http requests, and could cause your IP to become banned. While you are testing out your code, be sure to test with only two or three teams at a time. Once you get your code running, then you may expand your code to download data for all 30 teams._
+
+```{r, error = TRUE}
+library(rvest)
+# starting page
+teampage <- read_html("http://www.baseball-reference.com/teams/")
+
+# write your r code here
+# create a table called baseball that contains all of the teams' franchise histories
+fran_name <- teampage %>% html_nodes("#active .franchise_names") %>% html_text()
+fran_name
+s <- html_session("http://www.baseball-reference.com/teams/")
+baseball <- data.frame()
+for (i in 1:length(fran_name)) {
+  hist <- s %>% follow_link(fran_name[i]) %>% read_html()
+  sub_tb <- as.data.frame(hist %>% html_nodes("#franchise_years") %>% html_table())
+  sub_tb['current'] <- fran_name[i]
+  baseball <- rbind(baseball, sub_tb)
+}
+# at the end, be sure to print out the dimensions of your baseball table.
+dim(baseball)
+head(baseball)
+```
+
+__Some light text clean up__
+
+Unfortunately the baseball-reference site makes use the of the non-breaking space character and uses it in places like the space in "Atlanta Braves."
+
+I've written some commands for you that will replace all instances of the non-breaking space and replace it with a standard space character in the baseball table. I've done this part for you.
+
+```{r, error = TRUE}
+library(stringr)
+# This code checks to see if text in table has regular space character
+# Because the text from the web uses a non-breaking space, we expect there to be a mismatch
+# I'm converting to raw because when displayed on screen, we cannot see the difference between
+# a regular breaking space and a non-breaking space.
+all.equal(charToRaw(baseball$Tm[1]), charToRaw("Arizona Diamondbacks"))
+
+# identify which columns are character columns
+char_cols <- which(lapply(baseball, typeof) == "character")
+
+# for each character column, convert to UTF-8
+# then replace the non-breaking space with a regular space
+for(i in char_cols){
+    baseball[[i]] <- str_conv(baseball[[i]], "UTF-8")
+    baseball[[i]] <- str_replace_all(baseball[[i]],"\\s"," ")
+    # baseball[[i]] <- str_replace_all(baseball[[i]],"[:space:]"," ")  # you might have to use this depending on your operating system and which meta characters it recognizes
+}
+
+# check to see if the conversion worked
+## should now be TRUE
+all.equal(charToRaw(baseball$Tm[1]), charToRaw("Arizona Diamondbacks"))
+```
+
+3. __Using dplyr to summarize data__
+
+_Once you have created your table, use the data it contains to calculate some summary statistics._
+
+_For each franchise, filter the dataset to only include data from the years 2001 to 2016 (inclusive). If the franchise changed team names during this period, include the previous team's data as well. (e.g. the data for the Washington Nationals will also include data for the 2001-2004 Montreal Expos)_
+
+_Then calculate the following summary statistics for each team across the 16 seasons:_
+
++ _for the years 2001-2016_
++ _total wins_
++ _total losses_
++ _total runs scored_
++ _total runs allowed_
++ _total win percentage_
++ _total pythagorean win percentage_ <https://en.wikipedia.org/wiki/Pythagorean_expectation>
+
+_Sort the resulting table (should have a total of 30 rows) by total win percentage._
+
+_Hint: At the top of my table, I had the NY Yankees, with a total win percentage of 0.5813_
+
+```{r}
+# enter your r code here
+baseball %>% group_by(current) %>% filter(Year>=2001) %>% summarise(win=sum(W), lose=sum(L), runs_scored=sum(R), runs_allowed=sum(RA), win_percentage=win/(win+lose), win_ratio=runs_scored^2/(runs_scored^2+runs_allowed^2)) %>% arrange(desc(win_percentage))
+# your final line of code here should print the summary table in the report
+```
+
+4. __Regular expressions to extract values in the Managers Column__
+
+_Using regular expressions, extract the wins and losses for the managers listed in the managers column. Be careful as some of the rows contain information for more than one manager. Combine all of the manager information to get a total wins and loss value for each of the managers. Many managers have managed more than one team. Be sure to combine all of the win-loss information for the same manager. You may assume that entries that share the same first initial and last name are the same person._
+
+_Create a summary table with one line for each manager. The table should contain the following columns, and should be sorted descending by total number of games._
+
++ _Manager's name (First initial and Last Name)_
++ _Total number of games managed_
++ _Total number of wins across career_
++ _Total number of losses across career_
++ _Total win percentage_
+
+_You can independently verify if your information is correct on baseball-reference.com. Each manager has his own page with a total count of wins and losses._
+
+
+_The first line of my table reads: C.Mack, 7679, 3731, 3948, 0.4858706, for manager, games, wins, losses, win percentage._
+
+_Figuring out the regular expression here is probably the trickiest part. There is also an instance where there are two different people with the same first initial and the same last name. Unfortunately, their information will end up being combined. For this homework assignment, that's okay._
+
+```{r}
+# enter your r code here
+library(stringr)
+pattern1 <- "([A-Z].*?\\))"
+name <- str_match_all(baseball$Managers, pattern = pattern1)
+head(name)
+for (i in 1:length(name)) {
+  name[[i]] <- name[[i]][,-2]
+}
+name <- unlist(name)
+pattern2 <- "([A-Z]\\.\\w+) \\((\\d+)-(\\d+)\\)"
+name <- str_match_all(name, pattern = pattern2)
+head(name)
+managername <- c()
+win <- c()
+lose <- c()
+for (i in 1:length(name)) {
+  managername[i] <- name[[i]][2]
+  win[i] <- as.integer(name[[i]][3])
+  lose[i] <- as.integer(name[[i]][4])
+}
+table <- cbind(data.frame(managername,win,lose))
+table %>% group_by(managername) %>% summarise(total_game=sum(win)+sum(lose), total_win=sum(win), total_loss=sum(lose), win_percentage=total_win/total_game) %>% arrange(desc(total_game))
+#wl <- name[seq(2,length(name), by=2)]
+# your final line of code here should print the first 10 rows of 
+# the summary table in the report
+```

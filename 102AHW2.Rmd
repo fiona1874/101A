@@ -1,0 +1,457 @@
+---
+title: "102AHW2"
+author: "JING LI"
+date: "October 6, 2016"
+output: html_document
+---
+
+
+_Modify this file with your answers and responses. Please preserve all text that is italicized._
+
+_You are encouraged to collaborate with your classmates, however, you are responsible for your own work. Please do not ask people outside of this class for help with this assignment._
+
+### Reading
+
+a. Scientific Programming and Simulation Using R (SPURS) - Chapters 3 and 5
+b. Advanced R - Chapter 6 sections 1 and 2
+
+1. _SPURS chapter 3, section 9, exercise 1. [10pts]_
+
+```{r}
+f <- function(x){
+ if (x <=0){
+   y <- x^3*(-1)
+ }
+  else if(x>0 && x<=1){
+    y <- x^2
+  }
+  else{
+    y <- sqrt(x)
+  }
+}
+
+```
+
+```{r, error = FALSE}
+# do not modify this code
+x_values <- seq(-2, 2, by = 0.1)
+y_values <- rep(NA, length(x_values))
+for (i in seq_along(x_values)) {
+  x <- x_values[i]
+  y_values[i] <- f(x)
+}
+
+# output
+plot(x_values, y_values, type = "l")
+```
+
+2. _SPURS chapter 3, section 9, exercise 2, but write it as a function (as specified in chapter 5, section 7, exercise 2) [10pts]_
+
+```{r}
+h <- function(x, n){
+  y=0
+ for(i in 0:n){
+   y=y+x^i
+ }
+  return(y)
+}
+```
+
+```{r, error = TRUE}
+# do not modify this code chunk
+# a few test cases
+h(1,6)
+h(2,7)
+h(3,5)
+h(10,5)
+```
+
+3. _SPURS chapter 3, section 9, exercise 4. [10pts]_
+
+```{r}
+h_while <- function(x, n){
+  y=0
+  i=0
+ while(i<=n){
+   y <- y+x^i
+   i <- i+1
+ }
+  return(y)
+}
+```
+
+```{r}
+h_vector <- function(x, n){
+  y <- sum(x^(0:n))
+  return(y)
+}
+h_vector(1,6)
+h_vector(2,7)
+h_vector(3,5)
+h_vector(10,5)
+```
+
+```{r, error = TRUE}
+# do not modify this code chunk
+# a few test cases
+h_while(1,6)
+h_while(2,7)
+h_while(3,5)
+h_while(10,5)
+```
+
+4. _SPURS chapter 3, section 9, exercise 10. [10pts]_
+
+```{r}
+
+my_min <- function(x){
+   x.min <- x[1]
+  for (i in 1:length(x)) {
+    if (x[i] < x.min){
+      x.min<- x[i]
+    }
+  }
+  return(x.min)
+}
+```
+
+```{r, error = TRUE}
+# do not modify this code chunk
+# a few test cases
+my_min(c(5,4,7,5,3,2))
+my_min(-c(5,4,7,5,3,2))
+```
+
+
+
+5. _SPURS chapter 5, section 7, exercise 3, parts a, b, and c. [15pts]_
+
+```{r}
+# write your answer here. I've written a little bit of code to get you started.
+# part a
+a <- rep(NA,4)
+a
+for (i in 1:4) {
+  a[i] <- ceiling(6*runif(1))
+}
+
+if(6 %in% a){
+  cat("WIN!")
+}else{
+  cat("LOSE")
+}
+a
+
+
+# part b
+
+sixes <- function(n=4){
+  b <- rep(NA,n)
+  for(i in 1:n){
+    b[i] <- ceiling(6*runif(1))
+  }
+  if(6 %in% b){
+      return(TRUE)
+  }
+  else{
+    return(FALSE)
+  }
+}
+
+# part c
+sixes_rep <- function(n=4, r){
+  # n is the number of dice
+  # r is the number of replicates (capital N in the text)
+
+  obs <- sum(replicate(r,sixes(n)))/r
+  theor <- 1-(5/6)^n
+  difference <- obs-theor
+  
+  
+  # the function should print:
+  cat("Theoretical prob of at least one six in", n, "dice is:", theor, "\n")
+  cat("Empirical prob of at least one six after", r,"replications is:", obs, "\n")
+  cat("the difference is", difference ,"\n")
+  return(difference)
+}
+
+```
+
+
+
+```{r, error = TRUE}
+# do not modify this code chunk
+# a few test cases to see if your code works
+set.seed(1)
+sixes_rep(4, 100)
+sixes_rep(4, 1000)
+sixes_rep(4, 10000)
+```
+
+
+## Write a program that will play tic-tac-toe [worth 45 pts]
+
+In this exercise, you will write a series of functions that will allow you to play tic-tac-toe in R. I'm assuming you know how to play tic-tac-toe, but in case you don't, have a friend teach you. It's very easy to learn. Also check out: https://en.wikipedia.org/wiki/Tic-tac-toe 
+
+In the game you program, X always goes first. O goes second.
+
+Your program should provide the option to accommodate one or two human players. If there is one human player, the computer will be the opponent.
+
+The `state` of the game should be stored as a character vector of length 9. I used NA for spots that were unplayed, and entered "x" and "o" as the game progressed.
+
+You will need to create at least the following four functions. You can choose to create additional functions if you please.
+
+```c
+display(state)  # displays the current state of the board. [5pts]
+update(state, who, pos)  # updates the state of the board by putting an x or o (who) 
+                         # in the designated position (pos) [10 pts]
+computer_turn(state)  # has the computer take a turn. The input is the state.
+                      # The function returns the position where the computer will play. [10 pts]
+check_winner(state)   # checks if there is a winner. [10pts]
+play() # the 'wrapping' function that lets you play a game by combining the above functions. [10pts]
+```
+Your `display(state)` function should present the board as a 3x3 grid with numbers in the positions as follows.
+
+```c
+ 1 | 2 | 3 
+---+---+---
+ 4 | 5 | 6 
+---+---+---
+ 7 | 8 | 9
+```
+
+As the game progresses, the display function should output the current state of the game board. For example:
+
+```c
+ x | 2 | 3  
+---+---+---
+ 4 | o | 6  
+---+---+---
+ 7 | 8 | 9
+```
+The function `update(state, who, pos)` takes the current state of the game and puts in an 'x' or 'o' in the designated position. It should check to see if the spot is already taken. This function should be very simple to implement.
+
+The `computer_turn` function will read the current board and return where it will play next. The `computer_turn` should be able to deduce whether the computer is playing as x or as o. The function should also implement some basic strategy. 
+
+The computer's turn does not have to be optimal play, but you must implement at least the following logic:
+
+1) if the computer can win by playing a spot, it must play in that spot and win
+2) if the human can win by playing a spot, the computer must play in that spot to block. (If the human can win in two ways, then just pick one way to block).
+
+If neither a win nor a block can be achieved in the next move, then I leave it to you as to where the computer should play next. You can attempt to implement an optimal strategy, or you can have it play sub-optimally. You do not have to program perfect gameplay.
+
+The `play` function puts everything together.
+
+It should first ask if there is one or two human players. If there is one human player, it should ask if the human will play first or second.
+
+I've outlined in psuedo-code how I imagine you can set up the play function:
+
+```c
+play <- function(){
+  # determine game conditons: 1 or 2 players. If computer plays, is it player 1 or 2.
+  # initialize game board
+  # while( no winner ){
+    # x's turn
+      display() # display board 
+      # x chooses where to play. prompt user or computer_turn()
+      update() # update board
+      check_winner() # if x wins - quit loop
+    # o's turn
+      display() # display board 
+      # o chooses where to play. prompt user or computer_turn()
+      update() # update board
+      check_winner() # if o wins - quit loop
+  }
+  # display final board state and who the winner is
+}
+```
+Hint: I strongly recommend getting the game to work for two human players first. Worry about programming the 'AI' after that.
+
+Hint: There are 8 ways to win in tic-tac-toe. I've gone ahead and created a list of these 'triples' for you.
+
+```{r}
+triples <- list(
+  c(1,2,3),
+  c(4,5,6),
+  c(7,8,9),
+  c(1,4,7),
+  c(2,5,8),
+  c(3,6,9),
+  c(1,5,9),
+  c(3,5,7)
+)
+```
+
+As you program the game, you'll want to check the triples to see if a player has won. I think they will also come in handy as you try to determine where the computer should play. You are not required to do so, but I wrote a "check_winner" function to see if there was a win.
+
+### Copy and paste your working code into this code chunk. You will also submit an .R file called "tic-tac-toe-first-last.R" that has all of the code in it. This will allow the reader to do more thorough testing for your submission.
+```{r, error = TRUE}
+# paste all of your code for this problem here
+display <- function(state){
+ cat(" ", state[1], "|", state[2],"|", state[3], "\n", "---+---+---\n ", state[4], "|", state[5], "|", state[6], "\n", "---+---+---\n ", state[7],"|", state[8],"|", state[9],"\n")
+}
+begin <- 1:9
+```
+
+
+```{r}
+update <- function(state, who, pos){
+  if(who != "x" && who !="o") {stop("Only x and o are allowed.\n")}
+  if(is.numeric(pos)==FALSE) {stop("Only numbers 1 to 9 are allowed")}
+  if(state[pos] == "x" || state[pos] == "o"){stop("The position has been taken")}
+  else{state[pos]=who}
+  
+  return(state)
+}
+```
+
+```{r}
+computer_turn <- function(state){
+if(length(which(state=="x")) < length(which(state=="o")))
+if(state[5] !="x"&& state[5]!="o")pos <- 5
+else if(state[1] !="x"&&state[1]!="o")pos <- 1
+else if(state[3] !="x"&&state[3]!="o")pos <- 3
+else if(state[7] !="x"&&state[7]!="o")pos <- 7
+else if(state[9] !="x"&&state[9]!="o")pos <- 9
+else if(state[2] !="x"&&state[2]!="o")pos <- 2
+else if(state[4] !="x"&&state[4]!="o")pos <- 4
+else if(state[6] !="x"&&state[6]!="o")pos <- 6
+else if(state[8] !="x"&&state[8]!="o")pos <- 8
+
+if(state[2]==state[3]|| state[4]==state[7]||state[5]==state[9])
+     if(state[1] !="x"&&state[1]!="o")pos<-1
+else if(state[1]==state[3]|| state[5]==state[8])
+     if(state[2] !="x"&&state[2]!="o")pos<-2
+else if(state[2]==state[1]|| state[5]==state[7]||state[6]==state[9])
+     if(state[3] !="x"&&state[3]!="o")pos<-3
+else if(state[1]==state[7]|| state[5]==state[6])
+     if(state[4] !="x"&&state[4]!="o")pos<-4
+else if(state[9]==state[1]||state[3]==state[7]||state[6]==state[4]||
+    state[2]==state[8]) 
+     if(state[5] !="x"&&state[5]!="o")pos<-5
+else if(state[3]==state[9]|| state[5]==state[4])
+     if(state[6] !="x"&&state[6]!="o")pos<-6
+else if(state[4]==state[1]|| state[5]==state[3]||state[8]==state[9])
+     if(state[7] !="x"&&state[7]!="o")pos<-7
+else if(state[9]==state[7]|| state[5]==state[2])
+     if(state[8] !="x"&&state[8]!="o")pos<-8
+else if(state[5]==state[1]|| state[6]==state[3]||state[8]==state[7])
+     if(state[9] !="x"&&state[9]!="o")pos<-9
+
+  return(pos)
+}
+```
+
+
+```{r}
+user_turn <- function(state=begin,who="x"){
+  cat(who, ",these are the available numbers:", state)
+  pos <- readline("where do you want to play?\n")
+  pos = as.integer(pos)
+  return(pos)
+}
+```
+
+
+```{r}
+check_winner <- function(state=begin){
+   result <- "no winner"
+  if(all(state[c(1,2,3)]=="o")||all(state[c(4,5,6)]=="o")||all(state[c(7,8,9)]=="o")||
+     all(state[c(1,4,7)]=="o")||all(state[c(2,5,8)]=="o")||all(state[c(3,6,9)]=="o")||
+     all(state[c(1,5,9)]=="o")||all(state[c(3,5,7)]=="o"))result<-"o"
+  if(all(state[c(1,2,3)]=="x")||all(state[c(4,5,6)]=="x")||all(state[c(7,8,9)]=="x")||
+     all(state[c(1,4,7)]=="x")||all(state[c(2,5,8)]=="x")||all(state[c(3,6,9)]=="x")||
+     all(state[c(1,5,9)]=="x")||all(state[c(3,5,7)]=="x"))result<-"x"
+  if(all(state[1:9] %in% c("o","x")))result<-"tie"
+  return(result)
+}
+
+```
+
+
+```{r}
+play <- function(){
+  state =  begin
+  display(state)
+  player <- as.character((readline("How many players? Please answer 1 or 2.\n")))
+  if(player == "1") {order <- as.character(readline("Do you want to go first or second? Please enter 1 or 2.\n"))}
+  if(player == "2") order <- 1
+  
+ 
+for (i in 1:9) {
+  
+  if(i %% 2==1){
+    who <- "x"
+    if(player == "1" && order == "1"){
+      pos <- user_turn(state, who)
+      state <- update(state, who, pos)}
+    if(player == "1" && order == "2"){
+      pos <- computer_turn(state, who)
+      state <- update(state, who, pos)}
+    if(player == "2" && order == "1"){
+      pos <- user_turn(state, who)
+      state <- update(state, who, pos)}
+  }
+   if(i %% 2==0){
+     who <- "o"
+    if(player == "1" && order == "1"){
+      pos <- computer_turn(state, who)
+      state <-update(state, who, pos)}
+    if(player == "1" && order == "2"){
+      pos <- user_turn(state,who)
+      state <- update(state, who, pos)}
+    if(player == "2" && order == "1"){
+      pos <- user_turn(state,who)
+      state <- update(state, who, pos)}
+   }
+   
+    display(state)
+    check_winner(state)
+    if(check_winner(state)=="no winner")i <- i+1
+    if(check_winner(state)=="x"){print("x is winner!"): break}
+    if(check_winner(state)=="o"){print("o is winner!"): break}
+    if(check_winner(state)=="tie"){print("tie!"): break}
+    
+}
+  
+  
+  # display final board state and who the winner is
+
+}
+```
+
+
+
+
+Don't mess with the following code. It's so the reader can check that your functions have been programmed correctly.
+
+```{r, error = TRUE}
+teststate <- 1:9
+display(teststate)
+computer_turn(teststate)
+
+teststate <- c("x", "2", "3", "4", "o", "x", "7", "o", "x")
+display(teststate)
+computer_turn(teststate)
+
+teststate <- c("x", "x", "3", "o", "o", "6", "7", "o", "x")
+display(teststate)
+computer_turn(teststate)
+
+teststate <- c("x", "2", "3", "4", "o", "x", "7", "o", "x")
+newstate <- update(teststate, "o", 2)
+display(newstate)
+
+teststate <- c("x", "2", "3", "4", "o", "x", "7", "o", "x")
+newstate <- update(teststate, "o", 1)
+
+teststate <- c("x", "x", "3", "o", "o", "6", "7", "o", "x")
+check_winner(teststate)
+
+teststate <- c("x", "x", "x", "o", "o", "6", "7", "o", "x")
+check_winner(teststate)
+
+teststate <- c("x", "x", "o", "o", "o", "x", "x", "o", "x")
+check_winner(teststate)
+```
+
