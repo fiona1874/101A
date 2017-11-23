@@ -1,0 +1,152 @@
+---
+title: "101AHW6"
+author: "JING LI"
+date: "11/13/2016"
+output: pdf_document
+---
+
+Statistics 101A- Fall 2016 Homework six
+Part one: Using the UCLA stress echo data set (this data set and its description is posted on week eight of CCLE).
+Using R conduct two-way ANOVA using maximum heart rate as the outcome variable, gender with diagnosis as the independent variables. Include your output.
+
+```{r}
+stress <- read.delim("~/Downloads/Stress2.txt", stringsAsFactors=FALSE) 
+attach(stress)
+boxplot(maxhr ~ gender, main="by Gender")
+lm <- lm(maxhr~gender+newPTCA+gender:newPTCA)
+anova(lm)
+```
+
+
+a) State the null and the alternative hypotheses within context.
+
+H0: The means for female and male maximum heart rate is the same. The means for patients who had a diagnosis is the same.
+Ha: The means for female and male maximum heart rate is not the same. The means for patients who had a diagnosis is not the same.
+
+b) Based on the R output decide which hypotheses you reject and which ones
+you fail to reject. Interpret the results within context.
+
+Base on the p-value, none of the predictors are significant. We fail to reject null. There is no significant difference between the means for predictors gender and newPTCA.
+
+c) Using R, create table of means and the plot of interaction effect between
+gender and diagnosis. Interpret your conclusions regarding the interaction
+effect within context.
+```{r}
+lmc <- aov(maxhr~gender+newPTCA+gender:newPTCA)
+print(model.tables(lmc, "means"), digits = 3)
+gen<-factor(gender)
+newPT<-factor(newPTCA)
+interaction.plot(gen,newPT,maxhr, type = "b", col = c(1,2)
+                 , xlab = "gender", ylab = "mean maximum heart rate")
+
+```
+There is obvious interaction between the variables gender and newPTCA based new angioplasty or no new angioplasty.
+
+d) Conduct the same analyses using regression. Compare and contrast the results of regression and ANOVA.
+```{r}
+summary(lm)
+summary(lmc)
+```
+The results from regression are close to those from the anova.
+
+e) Interpret R2 resulting from regression analyses within the context of the
+study.
+
+Only 0.5% of the variation within the response variable is explained by the model.
+
+Part two. Using the stress echo data set posted earlier CCLE conduct an ANCOVA (Analysis of Covariances) and answer the following questions.
+
+a) Using maximum heart rate as the outcome variable, base heart rate as the covariate, and ecg as the predictor, conduct ANCOVA. Report both outputs.
+
+```{r}
+ECG <- factor(ecg)
+lm2 <- lm(maxhr~ECG+bhr)
+summary(lm2)
+aov(lm2)
+```
+
+b) Compute the coefficient of correlation between maximum heart rate and base heart rate and the scatter plot by group (normal ecg and equivocal ecg ??? equivocal meaning dubious or questionable); this way we can make sure that the pattern of relationship between the covariate (bhr) and outcome (maxheartrate) is similar for both groups.
+
+```{r}
+cor(maxhr,bhr)
+par(mfrow=c(1,2))
+plot(maxhr ~ ECG + bhr)
+```
+
+c) Interpret the coefficients associated with ecg and ecg:bhr. Determine whether bhr is a significant covariate or not.
+Hints:
+
+```{r}
+lm2c <- lm(maxhr ~ ECG + bhr + ECG:bhr)
+summary(lm2c)
+```
+bhr is a significant covariate base on the statistics.
+
+Compute the mean of maxhr by ecg for a more accurate interpretation of the coefficient associated with ecg. You could also run SLR as a function of ecg to see this.
+Part Three: Question 3 of Chapter 5
+
+a)
+The coefficient of the interaction term in model is statistically significant, becuase the p-value is less than 0.025 so that we have a significant interaction term. Also, the r-squared value increased by 5% for including the interaction term. 
+
+b)
+  Quality=b0 +b1EndofHarvest+b2Rain + b3 End of Harvest ?? Rain 
+  Quality=5.16122 - 0.03145*EndofHarvest + 1.78670*Rain - 0.08314*End of Harvest ?? Rain
+  (i) No unwanted rain at harvest (rain=0)
+  -1 = 5.16122 - 0.03145*EndofHarvest
+```{r}
+-1/-0.03145
+```
+
+   (ii) Some unwanted rain at harvest(rain=1)
+   
+   -1=5.16122 - 0.03145*EndofHarvest + 1.78670 - 0.08314*End of Harvest
+```{r}
+-1/(-0.03145-0.08314)
+```
+
+Part Four: QUESTION 5 of Chapter 6
+a) 
+
+
+
+b)
+
+```{r}
+pgatour <- read.csv("~/Downloads/pgatour2006.csv", stringsAsFactors=FALSE)
+attach(pgatour)
+lm4 <- lm(PrizeMoney ~ DrivingAccuracy+GIR+PuttingAverage+BirdieConversion+
+            SandSaves+Scrambling+PuttsPerRound)
+summary(lm4)
+par(mfrow=c(2,2))
+plot(lm4)
+```
+There is a pattern in the residual vs fitted plot, which indicates the violation of random normal errors assumptions. The  Violations of the basic assumptions may invalidate our model. As a result, we choose to transform the model.
+```{r}
+lm5 <- lm(log(PrizeMoney) ~
+            log(DrivingAccuracy)+log(GIR)+log(PuttingAverage)+log(BirdieConversion)+log(SandSaves)+log(Scrambling)+log(PuttsPerRound))
+par(mfrow=c(2,2))
+plot(lm5)
+```
+
+The second model has liitle or no violation of the basic assunptions. Thus, we take the transformed model instead of the original one.
+
+c) 
+```{r}
+outlier <- which(cooks.distance(lm5)> 4/(nrow(pgatour)-2))
+outlier
+```
+
+These points need further examination, because they are outliers and may have significant effect on the model. 
+
+d) 
+
+```{r}
+library(car)
+vif(lm5)
+mmps(lm5)
+```
+
+Some of the variables have a vif value over 5 and some of the predictors are not quite inhancing the model. Thus, we should consider a simpler model compare to the full model.
+e)
+
+Because there may be multicorlinearity between the predictors, we cannot delete the predictors with insignificant t-values at the same time. We should start omitting predictors one by one instead of taking out the indignificant variables at the same time.

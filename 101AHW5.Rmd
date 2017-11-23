@@ -1,0 +1,98 @@
+---
+title: "101AHW5"
+author: "JING LI"
+date: "11/3/2016"
+output: pdf_document
+---
+
+a) Using the North Carolina data set posted on week six of CCLE.
+
+```{r}
+ncbirths <- read.delim("~/Downloads/births.txt", stringsAsFactors=FALSE)
+head(ncbirths)
+dim(ncbirths)
+```
+
+i) Use the corrplot function to create a visual representation of the correlation matrix.
+
+```{r}
+cormat<- round(cor(ncbirths[,unlist(lapply(ncbirths, is.numeric))],use="pairwise.complete.obs"),3)
+library(corrplot)
+corrplot(cormat)
+```
+
+ii) What did you notice?
+A)The numeric variable weeks has a modest to strong correlation to the variable, birthweight.B)Mage also has a strong correlation with Fage.C)Feduc also has a strong correlation to Meduc.
+
+b) Use Use Birthweight to represent your response variable.
+
+1) As the first block of predictors, pick three numerical predictors based on the table of correlation; keep the problem of multicollinearity in mind (Those predictors might be highly correlated with each other).
+
+Bsed on the table of correlation and the concern of multicolinearity, three vaviables should be chosen: Weeks, Visits, and Apgar1.
+
+2) Test the relevant assumptions, and create the multiple linear model.
+
+```{r}
+nc<-complete.cases(ncbirths)
+data1<-cbind(ncbirths,nc)
+summary(data1)
+attach(data1)
+dim(data1)
+
+# First one is without using complete cases
+mtry<-lm(Birthweight~Visits+Weeks+Apgar1)
+summary(mtry)
+# only using complete cases:
+mtry2<-lm(Birthweight[nc=="TRUE"]~Visits[nc=="TRUE"]+Weeks[nc=="TRUE"]+Apgar1[nc=="TRUE"])
+summary(mtry2)
+par(mfrow=c(2,2))
+plot(mtry2)
+```
+
+3) Create another MLR model based on standardized partial coefficients (see week six lecture notes for information on partial standardized residuals for the relevant library that you need to install and the relevant commands).
+```{r}
+library(lm.beta)
+mtry3 <- lm.beta(mtry2)
+coef(mtry3)
+```
+
+c) As the second block, pick three other predictors:
+
+1) Add the other three predictors to the MLR model in part (b (1)).
+So, model two should now have six predictors (three belonging to block one and three belonging to block two).
+
+```{r}
+mtry4 <- lm(Birthweight[nc=="TRUE"]~Visits[nc=="TRUE"]+Weeks[nc=="TRUE"]+Gained[nc=="TRUE"]+Apgar1[nc=="TRUE"]+Mage[nc=="TRUE"]+Feduc[nc=="TRUE"])
+summary(mtry4)
+```
+
+2) Again, test the relevant assumptions. Make the linear model for model two based on standardized coefficients.
+
+```{r}
+par(mfrow=c(2,2))
+plot(mtry4)
+mtry5 <- lm.beta(mtry4)
+coef(mtry5)
+```
+
+d) Present the summary of results for model one and model two;
+The models that you reported in parts b and c above. Is it worth having six predictors instead of three? How much does your R??2 increase? Is the change significant? Interpret the results within context.
+
+```{r}
+summary(mtry2)
+summary(mtry4)
+anova(mtry2, mtry4)
+```
+The partial F- test of the full model and the reduced model indicates that there is a significant increase in the R-squared value, so it is worth to have 6 predictors instead of 3.
+
+
+e) Pick a categorical predictor and then add it to your MRL in part (C)
+Does that categorical predictor enhance your R??2? Explain.
+
+```{r}
+mtry6 <- lm(Birthweight[nc=="TRUE"]~Visits[nc=="TRUE"]+Weeks[nc=="TRUE"]+Gained[nc=="TRUE"]+Apgar1[nc=="TRUE"]+Mage[nc=="TRUE"]+Feduc[nc=="TRUE"]+Gender[nc=="TRUE"])
+summary(mtry4)
+summary(mtry6)
+```
+
+The categorical predictor does not enchance the R^2 significantly, but the p-value indicates that Gender is a significant predictor.

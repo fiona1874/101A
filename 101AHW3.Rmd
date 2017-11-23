@@ -1,0 +1,195 @@
+---
+title: "101AHW3"
+author: "JING LI"
+date: "October 12, 2016"
+output: pdf_document
+---
+
+Problem one.
+a) Using the High School Beyond data set posted on week 3, conduct a two- sample t test of the mean to compare the average math scores of both genders.
+```{r}
+hsb <- read.csv("~/Downloads/hsb2 jan13.csv", stringsAsFactors=FALSE)
+attach(hsb)
+```
+
+1) State the null hypothesis and the Alternative hypothesis?
+Null hypothesis: true difference between the means is equal to 0.
+Alternative hypothesis: true difference in means is not equal to 0.
+
+2) What is the underlying sampling distribution for the difference between
+the two means?
+
+The underlying sampling distribution for the difference is a Student???s t- distribution.
+
+3) Create a plot using R to demonstrate the difference in math scores across
+the two genders.
+
+```{r}
+math_m <- subset(math, female=="male")
+math_f <- subset(math, female=="female")
+boxplot(math_m, math_f)
+abline(h=mean(math_m), col="red")
+```
+
+4) Using R conduct a t-test of the null and create the 95% confidence
+interval for the difference between two means. (First t test do not assume
+"equal variances", then do it again assuming "equal variances")
+
+```{r}
+t.test(math_m, math_f, var.equal = FALSE)
+t.test(math_m, math_f, var.equal = TRUE)
+```
+
+5) Using the relevant findings from the printout calculate the t value and the
+confidence interval by hand.
+
+```{r}
+mean(math_m)
+mean(math_f)
+sd(math)
+s1 <- sd(math_m)
+s2 <- sd(math_f)
+l1 <- length(math_m)
+l2 <- length(math_f)
+spooled <- sqrt((s1^2*(l1-1)+ s2^2*(l2-1))/(l1+l2-2))
+var(math_m)/var(math_f)
+t <- (mean(math_m)-mean(math_f))/(spooled*sqrt(1/l1+1/l2))
+t
+pt(t, 398)
+c(mean(math_m)-mean(math_f)+qt(c(0.025,0.975), 398)*sqrt(spooled^2/l1+spooled^2/l2))
+```
+
+
+6) Interpret the results regarding testing the null and the confidence interval.
+
+The p value is 0.68(>0.05), and the 95% confidence interval covers the null 0. There is a great chase that the null hypothesis is correct and the two sample means are equal to each other.
+
+b) Conduct a simple linear regression using math scores as outcome variable and gender as the predictor (the independent variable).
+
+1) State the null hypothesis and the alternative hypothesis?
+
+Null hypothesis: The slope of the linear model is zero
+Alternative hypothesis: The slope of the linear model is not zero
+
+2) What is the underlying sampling distribution for the sample slope?
+
+The underlying sampling distribution for the sample slope is a t distribution.
+
+3) Using R, conduct a t-test of the null and create the 95% confidence
+interval.
+
+```{r}
+model <- lm(math~female)
+summary(model)
+confint(model)
+```
+
+4) Using the relevant findings from the printout calculate the t value and the confidence interval by hand.
+```{r}
+c(0.55471 + 1.3310 * qt(c(0.025,0.975), 398))
+```
+
+5) Interpret the results regarding testing the null and the confidence interval.
+
+The t-value for the slope is 0.413, so we fail to reject the null and the slope of this linear model may be 0.
+
+c)Compare the mathematical formulas used for hypothesis testing and construction of confidence interval for the two-sample test of the mean (part a) and test of the slope (part b). What similarities do you see? What do you conclude?
+
+
+
+d) Report the equation for the model. Report a residual plot and comment what it tells us about the assumption of linearity. Report the 95% confidence interval for the slope and the intercept of the linear model. What does this tell us about linear regression (assuming that our data is a normal model)?
+
+The equation for the model: math = 52.3945+0.5506female
+```{r}
+plot(model$residuals)
+abline(h=0, col="red")
+```
+According to the residual plot, the residuals do not have any pattern or trend. In other words, the residuals are evenly scattered around 0. The assumption of linearity is fulfilled, because there is no obvious pattern in the residual plot.
+```{r}
+confint(model)
+```
+
+The 95% confidence interval for the y-intercept is from 50.621237 to 54.167754, and the 95% confidence interval for the slope is from -2.078294 to 3.179413.
+This tells us that 95% of our samples will cover the true population slope and intercept.
+
+e)Create an ANOVA Tables for your simple linear regression and explain it. Show how you can find the F value reported in the ANOVA table using R2. Compare the F value that you calculate with value that you find from the F table (or R- studio) and decide whether you are going to reject or fail to reject the null hypothesis). What is the null hypothesis that you are testing through ANOVA?
+
+```{r}
+anova(model)
+#r2 = ssr/sse
+#F = (ssr/1)/(sse/198)
+#F = r2*198
+F = 0.0008607*198
+F
+pf(F, 1, 198)
+```
+Base on the p-value, we fail to reject the null. The null hypothesis states that there is no linear relation between the predictor and the dependent variable.
+
+f) Interpret R2 within context.
+
+Only 0.8607 of the variation of the response data around its mean is explained by the model.
+
+Problem Two: Using the High School Beyond data set posted on week 3, conduct a chi-square analysis to examine the relationship between race and school type, and Socioeconomic status (ses) and school type.
+a)Using R, create two contingency tables:
+
+1) First table will have race as rows and school type as columns.
+
+```{r}
+table1 <- table(race,scholtype)
+table1
+```
+
+2) Second table will have ses as rows and having school type as columns
+
+```{r}
+table2 <- table(ses, scholtype)
+table2
+```
+
+3) Each contingency table should include cell, row, column frequencies as
+well as row and column percentages/proportions.
+
+```{r}
+prop.table(table1)
+prop.table(table1,1)
+prop.table(table1,2)
+prop.table(table2)
+prop.table(table2,1)
+prop.table(table2,2)
+```
+
+b) Using R Calculate the Chi-square and P value for relationship between race and school type as well as relationship between ses and school type.
+
+```{r}
+chisq.test(race, scholtype)
+chisq.test(ses, scholtype)
+```
+
+c) Interpret the results of the two chi-square analysis within context and with reference to column and row proportions.
+
+The p-value for the relationship between race and school type is 0.4373. We fail to reject the null, so basically the variable race is independent of the vairable school type. If we look at the column and row proportions, we can observe that regardless of the race, majority of the students attend public schools. Also, regardless of the school type, white students have a large population, becasue the population has a large portion of white students.
+The p-value for the relationship between ses and school type is 0.04213 < 0.05, so we reject the null. The variable ses is associated with the variable school type. According to the proportions, we can see that majority of the students go to public schools regardless of their family social economic status. However, of the students who go to public schools, the majority of them are from middle and high social class, while most of the students who go to public schools are from middle and high social class.
+
+d) Find the mathematical formula for the calculation of Chi-square from a book or the Internet and using the table of frequencies, calculate the Chi-square for the relationship of race and school type by hand.
+
+```{r}
+exp <- rep(NA, 8) 
+exp[1] <- sum(table1[1,])*sum(table1[,1])/200
+exp[2] <- sum(table1[2,])*sum(table1[,1])/200
+exp[3] <- sum(table1[3,])*sum(table1[,1])/200
+exp[4] <- sum(table1[4,])*sum(table1[,1])/200
+exp[5] <- sum(table1[1,])*sum(table1[,2])/200
+exp[6] <- sum(table1[2,])*sum(table1[,2])/200
+exp[7] <- sum(table1[3,])*sum(table1[,2])/200
+exp[8] <- sum(table1[4,])*sum(table1[,2])/200
+sum <- 0
+for (i in 1:8) {
+ sum <- sum + ((table1[i]-exp[i])^2/exp[i])
+}
+sum
+```
+
+
+e)What is the probability rule that underlies the mathematical calculation of Chi- square?
+
+Two assumptions: 1. All the observations are independent. 2. Sampling distributions of the deviations of the requencies are normal.

@@ -1,0 +1,98 @@
+---
+title: "101AHW4"
+author: "JING LI"
+date: "10/25/2016"
+output: pdf_document
+---
+
+Statistics 101A Homework 4
+Question one. Problem one from chapter three 3.4 Exercises (The data file airfares.txt)
+
+a)
+Looking at R squared value is not the correct way of indicating a good model. However, we should examine the validity of the model before we consider the effectivity of the model.
+b)
+The standardized residuals plot shows nonlinearity between the predictor and the response value. Thus, the ordinary straight line regression model does not fit the data well. We can consider adding new terms to the model or transform X and/or Y.
+
+Question two. Problem three from chapter three 3.4 Exercises (The data file AdRevenue.csv)
+Part A
+a)
+```{r}
+adv <- read.csv("~/Downloads/AdRevenue.csv", stringsAsFactors=FALSE)
+attach(adv)
+plot(AdRevenue, Circulation)
+model1 <-lm(log(AdRevenue)~log(Circulation)) 
+summary(model1)
+par(mfrow = c(2,2))
+plot(model1)
+```
+b)
+```{r}
+exp(predict(model1,data.frame(Circulation= 0.5),interval="predict"))
+exp(predict(model1,data.frame(Circulation= 20),interval="predict"))
+```
+c)
+QQplot shows normal distribution, but there are exceptions on the plot that need to be considered: 60 and 64.
+
+Part B
+```{r}
+b1 <- lm(AdRevenue ~ poly(Circulation, 1, raw=TRUE)) 
+b2 <- lm(AdRevenue ~ poly(Circulation, 2, raw=TRUE)) 
+b3 <- lm(AdRevenue ~ poly(Circulation, 3, raw=TRUE)) 
+predict(b2,data.frame(Circulation= 0.5),interval="predict")
+predict(b2,data.frame(Circulation= 0.5),interval="predict")
+par(mfrow = c(2,2))
+plot(b2)
+detach(adv)
+```
+The constant variance test is not met. There are some significant outliers to the model.
+
+Question three: Problem four from chapter three 3.4 exercises (The Time and Tonnage data file)
+a)
+The straight line regression model does not seem to fit the data well, because the normal constant is not satisfied and there are some significant outliers that need to be taken care of.
+b)
+It would be a longer prediction interval for the Time when Tonnage = 10,000, because the nomal distrbution is not satisfied. Thus, the model may be invalid that any inferences based on the model could be invalid.
+a)
+This appears to be an imporved model, because the QQplot and standardized residual plot show nrmality and randonmization of the residuals.
+b)
+However, from the sqrt of the std residual plot, we can observe small residuals when x is extremely large. There may be a problem underlying this model as well.
+
+Question four: Problem five from chapter three 3.4 exercises (The Car04 data file)
+
+a) 
+We can see from the std residual plot that there is a clear fan shape, indicating nonconstant variance. Thus, the model is not valid. Therefore, any inferences based on the model is invalid.
+b)
+There is a clear pattern to the std residual plot indicating nonconstant variance and the QQ-plot also shows that the errors are not normally distributed. Also, according to the std residual plot, there are some very concering outliers that may be bad leverage points. To deal with these shortcomings, we should try to transfrom our data and deal with the bad leverage points.
+c)
+Generally we can say that there is great improvement to the model. First of all, the residuals seem to be normally distributed without any clear pattern. Secondly, the QQ-plot also indicates close to normality. 
+d)
+For every one unit of increase in log(DealerCost), there will be 1.014836 of increase in log(SuggestedRetailPrice). For example, if DealerCost increase by 10, log(DealerCost) increase by 2.302585, log(SuggestedRetailPrice) increase by 1.014836*2.302585=2.336746, and SuggestedRetailPrice increase by 10.34751.
+e)
+Although this is an improved valid model, there is still some weakness in the outliers. There are some outliers and the trend of the data do not fit perfectly to the model.
+
+Question five: Problem eight from chapter three 3.4 exercises (The Diamond stones data file)
+Part 1
+a)
+```{r}
+diamonds <- read.delim("~/Downloads/diamonds.txt", stringsAsFactors=FALSE)
+attach(diamonds)
+model2 <-lm(Price~Size)
+summary(model2)
+par(mfrow = c(2,2))
+plot(model2)
+```
+There seems to be little or no violation to the assumptions from the plots we drew.
+b)
+However, there seem to be an underlying patter in the residuals and the errors do not follow normal distribution entirely.
+Part 2
+a)
+```{r}
+transSize <- Size^(1/3)
+model3 <-lm(Price~transSize)
+par(mfrow = c(2,2))
+plot(model3)
+par(mfrow = c(1,1))
+```
+b)
+There is less violations here versus the precious model. However, there are few outliers, number 42 and 17 that need to be examined.
+Part 3
+There is less violations here versus the precious model.

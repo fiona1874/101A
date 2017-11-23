@@ -1,0 +1,93 @@
+---
+title: "101AHW2"
+author: "JING LI"
+date: "October 6, 2016"
+output: pdf_document
+---
+
+Problem one
+"The purpose of simple regression analysis is to evaluate the relative impact of a predictor variable on a particular out-come. This is different from a correlation analysis, where the purpose is to examine the strength and direction of the relationship between two random variables." 
+For example, correlation analysis of smoking and lung cancer would be to determine whether these two variables are closely related and the direction in which they are related. However, simple regression analysis is constructing a predictor and a dependent out of the two variables in order to predict the out-come. In this case, smoking would be more like a predictor and lung cancer would be the dependent. After the analysis, we may be able to predict the variable lung cancer using the variable smoking.
+
+Problem two
+
+```{r}
+UCLA.stressecho.data <- read.csv("~/Downloads/UCLA stressecho data.csv",
+                                 stringsAsFactors=FALSE)
+attach(UCLA.stressecho.data)
+cor.test(basebp,sbp)
+test <- cor.test(basebp,sbp)
+```
+a) What do the two variables basebp and sbp stand for?
+The variable basebp stands for basal blood pressure, and sbp stands for systolic blood pressure. We are going to study the correlation between these two vaiables.
+
+b) What is the underlying null hypothesis in words and in symbols?
+The underlying null hypothesis is H0: p0 = 0, the true correlation coefficent is 0.
+
+c) What is the underlying sampling distribution? What is the mean and the
+standard error of the underlying distribution?
+```{r}
+r <- test$estimate
+df <- 556
+se <- sqrt((1-r^2)/df) 
+```
+
+The underlying distribution is normal distribution. The mean is 0.3722908 and the standard error is 0.03936089.
+
+d) How did they calculate t = 9.4584?
+(r-p0)/s(r)???
+```{r}
+(r-0)/se
+```
+e) How did they calculate the 95% confidence interval?
+```{r}
+z = 0.5*log((1+r)/(1-r))
+n <- 558
+se.z = 1/sqrt(n-3)
+c(r-1.96*se.z,r+1.96*se.z)
+```
+
+```{r}
+detach(UCLA.stressecho.data)
+```
+
+f) Write an interpretation of the results from the hypothesis testing and the
+confidence interval within context for a statistical and non-statistical audience.
+
+We reject the null hypothesis because the p-value is smaller than 0.025. Because the possiblity for the true correlation to be 0 is way too small(p-value < 2.2e-16), we reject the null hypothesis because of the imperical rule. The 95% confidence interval is from 0.2985109 to 0.4416476. If we take 1000 random sample from the population, we are confident that 950 of the times the confidence interval will cover the true correlation r. 
+
+Problem Three
+"[A]nalyses often incur an additional assumption that the errors are distributed normally."
+"Firstly, linear regression needs the relationship between the independent and dependent variables to be linear.Secondly, the linear regression analysis requires all variables to be multivariate normal.Thirdly, linear regression assumes that there is little or no multicollinearity in the data.Fourthly, linear regression analysis requires that there is little or no autocorrelation in the data.The last assumption the linear regression analysis makes is homoscedasticity. " 
+Source: http://www.statisticssolutions.com/assumptions-of-linear-regression/
+
+
+Problem Four
+"It is not necessary for the errors to have a normal distribution, although the regression analysis is more efficient with this assumption (27)." "analyses often incur an additional assumption that the errors are distributed normally.""
+
+Problem Five
+```{r}
+log_data <- read.csv("~/Downloads/101B article one ln data only.csv")
+attach(log_data)
+plot(lnx, lny)
+x = exp(lnx)
+y = exp(lny)
+plot(x,y)
+```
+From the two scatter plots, we can see that the lnx and lny is more linearly correlated than x and y.
+
+Problem Six
+```{r}
+model <- lm(lny~lnx)
+summary(model)
+```
+The resulting intercept and slope are the same as the results from the article a is -9.28, b is 2.83.
+
+Problem Seven
+```{r}
+rad <- 60
+logdoze<- 2.83*(log(rad))-9.28
+doze = exp(logdoze)
+doze
+```
+I will predict the doze to be 10.0442 for a radiation time of 60 minutes.

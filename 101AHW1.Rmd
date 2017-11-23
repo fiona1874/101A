@@ -1,0 +1,117 @@
+---
+title: "101AHW1"
+author: "JING LI"
+date: "September 28, 2016"
+output: pdf_document
+---
+Problem one
+```{r}
+body_fat <- read.delim("~/Downloads/body_fat.txt", stringsAsFactors=FALSE)
+```
+a)
+```{r}
+str(body_fat)
+```
+b)
+```{r}
+head(body_fat)
+```
+c)
+```{r}
+summary(body_fat)
+```
+d)
+```{r}
+hist(body_fat$x4, main = "Histogram of the Weight", xlab = "Weight")
+boxplot(body_fat$x4, main = "Boxplot of the Weight", xlab = "Weight")
+```
+The distribution of the variable Weight is appriximatedly normal.
+```{r}
+summary(body_fat$x4)
+```
+e)
+```{r}
+mean(body_fat$x4)
+```
+f)
+```{r}
+t.test(body_fat$x4)
+```
+95 out of 100 samples taken from the population will have means fall between 175.3367 and 182.6529.
+```{r}
+t.test(body_fat$x4, conf.level = .9)
+```
+The 90% interval is obviously narrower than the 95% percent confidence interval, because 90% is more refined than 95%.
+g)
+```{r}
+plot(body_fat$x10, body_fat$x2)
+plot(body_fat$x11, body_fat$x2)
+plot(body_fat$x12, body_fat$x2)
+plot(body_fat$x13, body_fat$x2)
+plot(body_fat$x14, body_fat$x2)
+plot(body_fat$x15, body_fat$x2)
+```
+h)
+Base on the scatter plots, x10 seems to be the "best" predictor of x2.
+i)
+```{r}
+cor(body_fat, body_fat$x2)
+corcoef <- cor(body_fat, body_fat$x2)[10:15]
+```
+j)
+```{r}
+model1 <- lm(x10 ~ x2, data = body_fat)
+summary(model1)
+```
+R^2 is 0.3163 here. This means that it almost 32% of the variable variation is explained by model1.
+
+Problem 2
+a)
+```{r}
+n <- 1201
+k <- 500
+set.seed(1)
+simulation <- matrix(sample(c("Support","Oppose"), n * k, repl = T, 
+                            prob=c(0.55,0.45)), k, n)
+r <- rowSums(simulation == "Support")/ n
+hist(r)
+sd(r)
+c(mean(r)-1.96*sd(r), mean(r)+1.96*sd(r))
+```
+95% of the samples we drew have mean proportion between 0.5210127 and 0.5790939.
+b)
+```{r}
+p <- mean(r)
+se <- sqrt(p*(1-p)/1201)
+c(p-1.96*se, p+1.96*se)
+```
+The 95% confidence interval is very close to the confidence interval in part a).
+
+Problem 3
+a) 
+The distribution will be a normal distribution, because the number of iteration is big enough to satisfy the Central Limit Theorem.
+b)
+The distribution will be a normal distribution, because the number of iteration is big enough to satisfy the Central Limit Theorem.
+c)
+standard error = s / sqrt(n)
+Therefore, s ample from b) will have larger standard deviation, becuase the size of the samples is samller, there tend to be more variations within smaller samples. 
+
+Problem 4
+a)
+```{r}
+qt(0.975, 49)
+40500-2*25000/sqrt(50)
+40500+2*25000/sqrt(50)
+```
+b)
+When constructing confidence intervals the assumptions of the central limit theorem must be met in order to use the normal model. Also the sample values must be independent of each other.
+c)
+No, the claim is not valid. The population mean is either between the interval or outside the interval. The probability is either 100% or 0%. We can only say that out every 100 samples from the population, at least 95 of them will have sample means within the interval.
+d)
+```{r}
+(40500-42000)/(25000/sqrt(50))
+2*pt(-abs((40500-42000)/(25000/sqrt(50))), df=49)
+```
+Since 0.67 is greater than 0.025, we fail to reject null.
+e)
+Type one error here is 0.05.

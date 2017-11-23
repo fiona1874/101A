@@ -1,0 +1,230 @@
+---
+title: "101AHW7"
+author: "JING LI"
+date: "11/25/2016"
+output: pdf_document
+---
+
+Statistics 101A: Homework # 7 Fall 2016 Problems assigned from the book
+Problem Two from Chapter seven ??? page 255
+
+
+(a) Identify the optimal model or models based on R2adj, AIC, AICC, BIC from the approach based on all possible subsets.
+
+answer: The model with 3 predictors has the highest R2adj, and the lowest AIC.The model with 2 predictors had the lowest AICc and BIC. Using the argument described earlier in this chapter, one could choose the subset of size 2 to be ???best??? in terms of R2adj.
+
+(b) Identify the optimal model or models based on AIC and BIC from the approach based on forward selection.
+
+answer: AIC: Y ~ x4 + x1 + x2 
+        BIC: Y ~ x4 + x1 + x2
+
+(c) Identify the optimal model or models based on AIC and BIC from the approach based on backward elimination.
+
+answer: AIC: Y ~ x1 + x2 + x4
+        BIC: Y ~ x1 + x2
+
+(d) Carefully explain why the models chosen in (a), (b) & (c) are not all the same.
+
+When the sample size is small, or when the number of parameters estimated is a moderate to large fraction of the sample size, it is well-known that AIC has a tendency for over-fitting since the penalty for model complexity is not strong enough. As such it is not surprising in these circumstances that the bias corrected version of AIC has a larger penalty for model complexity.
+BIC penalizes complex models more heavily than AIC, thus favoring simpler models than AIC.
+In addition, there is no guarantee that backward elimination and forward selection will produce the same final model.
+
+(e) Recommend a final model. Give detailed reasons to support your choice.
+
+Notice that the predictor vairable is judged to be "statistically significant" in the simple linear regression model, both the predictor variables are judged to be ???statistically significant??? in the two-variable model, only one variable is judged to be ???statistically significant??? in the three-variable, but none of the predictor variables are judged to be ???statistically significant??? in the full model. In addition, the p-values obtained after variable selection are much smaller than their true values. In view of this, it seems that the three-variable and the four-variable models over-fit the data and the R2adj is significantlly higher for the two-variable model than it is for the single-variable model, so the two-variable model seems to be preferred.
+
+
+
+Q3 from Chapter 7:
+An avid fan of the PGA tour with limited background in statistics has sought your help in answering one of the age-old questions in golf, namely, what is the relative importance of each different aspect of the game on average prize money in professional golf ?
+The following data on the top 196 tour players in 2006 can be found on ccle in the file pgatour2006.csv:
+Y , PrizeMoney = average prize money per tournament
+x 1 , Driving Accuracy is the percent of time a player is able to hit the fairway with his
+tee shot.
+x 2 , GIR, Greens in Regulation is the percent of time a player was able to hit the green in regulation. A green is considered hit in regulation if any part of the ball is touching the putting surface and the number of strokes taken is two or less than par.
+x 3 , Putting Average measures putting performance on those holes where the green is hit in regulation (GIR). By using greens hit in regulation the effects of chipping close and one putting are eliminated.
+x 4 , Birdie Conversion% is the percent of time a player makes birdie or better after hitting the green in regulation.
+x 5 , SandSaves% is the percent of time a player was able to get ???up and down??? once in a greenside sand bunker.
+x 6 , Scrambling% is the percent of time that a player misses the green in regulation, but still makes par or better.
+x 7 , PuttsPerRound is the average total number of putts per round.( http://www.pgatour.com/r/stats/; accessed March 13, 2007)
+The golf fan was so impressed with your answers to part 1 (HW6 Q5) that your advice has been sought re the next stage in the data analysis, namely using model selection to remove the redundancy in full the model developed in part 1.
+log(Y) = B0 + B1x1 + B2 x2 + B3x3 + B4 x4 + B5x5 + B6 x6 + B7 x7 + e (Model 7.10) where the description of the variables is as listed above.
+Interest centers on using var
+iable selection to choose a subset of the predictors to model the transformed version of Y. Throughout this question we shall assume that model (7.10) is a valid model for the data.
+
+```{r}
+library(car)
+pgatour <- read.csv("~/Downloads/pgatour2006.csv", stringsAsFactors=FALSE)
+attach(pgatour)
+m1 <- lm(log(PrizeMoney)~log(DrivingAccuracy)+log(GIR)+log(PuttingAverage)+log(BirdieConversion)+log(SandSaves)+log(Scrambling)+log(PuttsPerRound))
+summary(m1)
+vif(m1)
+```
+
+```{r}
+logDrivingAccuracy <- log(DrivingAccuracy)
+logGIR <- log(GIR)
+logPuttingAverage <- log(PuttingAverage)
+logBirdieConversion <- log(BirdieConversion)
+logSandSaves <- log(SandSaves)
+logScrambling <- log(Scrambling)
+logPuttsPerRound <- log(PuttsPerRound)
+X <- cbind(logDrivingAccuracy,logGIR,logPuttingAverage,logBirdieConversion,logSandSaves,logScrambling,logPuttsPerRound)
+```
+
+
+
+
+A. Identify the optimal model or models based on Radj , AIC, AICC, BIC from the approach based on all possible subsets.
+
+```{r}
+library(leaps)
+b <- regsubsets(as.matrix(X),log(PrizeMoney))
+rs <- summary(b)
+par(mfrow=c(1,1))
+plot(1:7,rs$adjr2,xlab="Subset Size",ylab="Adjusted")
+rs
+```
+
+```{r}
+om1 <- lm(log(PrizeMoney)~log(GIR))
+om2 <- lm(log(PrizeMoney)~log(GIR)+log(PuttsPerRound))
+om3 <- lm(log(PrizeMoney)~log(GIR)+log(BirdieConversion)+log(Scrambling))
+om4 <- lm(log(PrizeMoney)~log(GIR)+log(BirdieConversion)+log(Scrambling)+log(SandSaves)) 
+om5 <- lm(log(PrizeMoney)~log(GIR)+log(BirdieConversion)+log(Scrambling)+log(SandSaves)+log(PuttsPerRound)) 
+om6 <- lm(log(PrizeMoney)~log(GIR)+log(BirdieConversion)+log(Scrambling)+log(SandSaves)+log(PuttsPerRound)+log(DrivingAccuracy)) 
+om7 <- m1
+```
+
+```{r}
+#Subset size=1
+n <- length(om1$residuals)
+npar <- length(om1$coefficients) +1 
+#Calculate AIC
+subset1 <- c(extractAIC(om1,k=2),
+#Calculate AICc
+extractAIC(om1,k=2)+2*npar*(npar+1)/(n-npar-1),
+#Calculate BIC
+extractAIC(om1,k=log(n)))
+```
+
+```{r}
+#Subset size=2
+npar <- length(om2$coefficients) +1 
+#Calculate AIC
+subset2 <- c(extractAIC(om2,k=2),
+#Calculate AICc
+extractAIC(om2,k=2)+2*npar*(npar+1)/(n-npar-1),
+#Calculate BIC
+extractAIC(om2,k=log(n)))
+
+```
+
+```{r}
+#Subset size=3
+npar <- length(om3$coefficients) +1 
+#Calculate AIC
+subset3 <- c(extractAIC(om3,k=2),
+#Calculate AICc
+extractAIC(om3,k=2)+2*npar*(npar+1)/(n-npar-1),
+#Calculate BIC
+extractAIC(om3,k=log(n)))
+```
+
+```{r}
+#Subset size=4
+npar <- length(om4$coefficients) +1 
+#Calculate AIC
+subset4 <- c(extractAIC(om4,k=2),
+#Calculate AICc
+extractAIC(om4,k=2)+2*npar*(npar+1)/(n-npar-1),
+#Calculate BIC
+extractAIC(om4,k=log(n)))
+```
+
+```{r}
+#Subset size=5
+npar <- length(om5$coefficients) +1 
+#Calculate AIC
+subset5 <- c(extractAIC(om5,k=2),
+#Calculate AICc
+extractAIC(om5,k=2)+2*npar*(npar+1)/(n-npar-1),
+#Calculate BIC
+extractAIC(om5,k=log(n)))
+```
+
+```{r}
+#Subset size=6
+npar <- length(om6$coefficients) +1 
+#Calculate AIC
+subset6 <- c(extractAIC(om6,k=2),
+#Calculate AICc
+extractAIC(om6,k=2)+2*npar*(npar+1)/(n-npar-1),
+#Calculate BIC
+extractAIC(om6,k=log(n)))
+```
+
+```{r}
+#Subset size=7
+npar <- length(om7$coefficients) +1 
+#Calculate AIC
+subset7 <- c(extractAIC(om7,k=2),
+#Calculate AICc
+extractAIC(om7,k=2)+2*npar*(npar+1)/(n-npar-1),
+#Calculate BIC
+extractAIC(om7,k=log(n)))
+```
+
+```{r}
+table1 <- data.frame(cbind(rs$adjr2,rbind(subset1,subset2,subset3,subset4,subset5,subset6,subset7)[,c(-1,-3,-5)]))
+names(table1) <- c("R2adj","AIC","AICc","BIC")
+table1
+```
+
+```{r}
+row.names(table1)[which(table1$R2adj==max(table1$R2adj))]
+row.names(table1)[which(table1$AIC==min(table1$AIC))]
+row.names(table1)[which(table1$AICc==min(table1$AICc))]
+row.names(table1)[which(table1$BIC==min(table1$BIC))]
+```
+
+
+answer: The model with 5 predictors has the highest R2adj, the lowest AIC, and the lowest AICc, while the model with 3 predictors has the lowest BIC. Using the argument described earlier in this chapter, one could choose the subset of size 5 to be ???best??? in terms of R2adj.
+
+B. Identify the optimal model or models based on AIC and BIC from the approach based on backward selection.
+
+```{r}
+backAIC <- step(m1,direction="backward", data=pgatour)
+backBIC <- step(m1,direction="backward", data=pgatour, k=log(n))
+```
+
+
+C. Identify the optimal model or models based on AIC and BIC from the approach based on forward selection.
+
+```{r}
+mint <- lm(log(PrizeMoney)~1,data=pgatour)
+forwardAIC <- step(mint,scope=list(lower=~1, upper=~log(DrivingAccuracy)+log(GIR)+log(PuttingAverage)+log(BirdieConversion)+log(SandSaves)+log(Scrambling)+log(PuttsPerRound)), direction="forward", data=pgatour)
+forwardBIC <- step(mint,scope=list(lower=~1, upper=~log(DrivingAccuracy)+log(GIR)+log(PuttingAverage)+log(BirdieConversion)+log(SandSaves)+log(Scrambling)+log(PuttsPerRound)), direction="forward", data=pgatour,k=log(n))
+```
+
+D. Carefully explain why the models chosen in (a) & (c) are not the same while those in (a) and (b) are the same.
+
+When the sample size is small, or when the number of parameters estimated is a moderate to large fraction of the sample size, it is well-known that AIC has a tendency for over-fitting since the penalty for model complexity is not strong enough. As such it is not surprising in these circumstances that the bias corrected version of AIC has a larger penalty for model complexity.
+BIC penalizes complex models more heavily than AIC, thus favoring simpler models than AIC.
+In addition, there is no guarantee that backward elimination and forward selection will produce the same final model.
+
+E. Recommend a final model. Give detailed reasons to support your choice.
+
+```{r}
+summary(om5)
+summary(om4)
+summary(om3)
+summary(om7)
+```
+
+
+Notice that two of the predictor vairables are judged to be "statistically significant" in the five-variable model, three of the predictor variables are judged to be ???statistically significant??? in the two-variable model, all of the predictor variables are judged to be ???statistically significant??? in the three-variable model, but only one of the predictor variables are judged to be ???statistically significant??? in the full model. In addition, the p-values obtained after variable selection are much smaller than their true values. In view of this, it seems that the five-variable and the four-variable models over-fit the data and the R2adj is not significantlly higher for the five-variable model than it is for the three-variable model, so the three-variable model seems to be preferred.
+
+F. Interpret the regression coefficients in the final model. Is it necessary to be cautious about taking these results to literally?
+
+For every unit increase of the predictors: GIR, BirdieConversion, and Scrambling, there will be an 10.1603, 5.8929, 5.3037 dollar of incease in the PrizeMoney, respectively. Yes, we need to be cautious about taking these results to literally, because the R-sqaured value suggest that only 55% percent of the variations within the PrizeMoney can be explained by this model. 
